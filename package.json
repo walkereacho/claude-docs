@@ -1,7 +1,7 @@
 {
-	"name": "obsidian-sample-plugin",
-	"version": "1.0.0",
-	"description": "This is a sample plugin for Obsidian (https://obsidian.md)",
+	"name": "claude-docs",
+	"version": "0.3.0",
+	"description": "Allows users to work with ClaudeCode on markdown files for documentation work and planning",
 	"main": "main.js",
 	"scripts": {
 		"dev": "node esbuild.config.mjs",
