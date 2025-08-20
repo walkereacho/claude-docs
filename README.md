@@ -1,6 +1,8 @@
 # Claude Docs
 An Obsidian plugin that integrates Claude Code CLI directly into your note-taking/doc-writing workflow. Send your markdown documents to Claude for AI-powered editing without leaving Obsidian.
 
+![output](https://github.com/user-attachments/assets/78ae481c-439f-483a-b008-cfaeba1b6af1)
+
 ## Features
 
 - **Direct Integration**: Send the current markdown document to Claude Code with a single command
