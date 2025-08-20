@@ -8,9 +8,9 @@
 # npm
 node_modules
 
-# Don't include the compiled main.js file in the repo.
-# They should be uploaded to GitHub releases instead.
-main.js
+# TypeScript source files (we're using JavaScript now)
+main.ts
+services/*.ts
 
 # Exclude sourcemaps
 *.map
