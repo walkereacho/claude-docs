@@ -1,6 +1,6 @@
 {
 	"name": "claude-docs",
-	"version": "0.3.0",
+	"version": "1.1.1",
 	"description": "Allows users to work with ClaudeCode on markdown files for documentation work and planning",
 	"main": "main.js",
 	"scripts": {

@@ -8,6 +8,7 @@ interface ClaudeCodeSettings {
 	claudePath: string;
 	customPath: string;
 	claudeModel: string;
+	continueConversation?: boolean;
 }
 
 export class ClaudeCodeService {
@@ -30,7 +31,8 @@ export class ClaudeCodeService {
 			// Build the command using settings
 			const claudePath = settings.claudePath || 'claude';
 			const model = settings.claudeModel || 'sonnet';
-			const command = `echo "${escapedPrompt}" | ${claudePath} --model ${model} --permission-mode acceptEdits`;
+			const continueFlag = settings.continueConversation ? '--continue' : '';
+			const command = `echo "${escapedPrompt}" | ${claudePath} --model ${model} --permission-mode acceptEdits ${continueFlag}`.trim();
 
 			console.log('Executing Claude Code command:', command.substring(0, 100) + '...');
 

@@ -69,7 +69,7 @@ export default class ClaudeCodePlugin extends Plugin {
 						const basePath = this.app.vault.adapter.getBasePath?.() || this.app.vault.adapter.basePath || '';
 						const filePath = basePath ? `${basePath}/${file.path}` : file.path;
 
-						new ClaudePromptModal(this.app, async (prompt, model) => {
+						new ClaudePromptModal(this.app, false, async (prompt, model, continueConversation) => {
 							// Show that we're processing with a longer timeout
 							const loadingNotice = new Notice(`🤖 Claude Code (${model}) is working on your file...`, 0);
 
@@ -78,7 +78,63 @@ export default class ClaudeCodePlugin extends Plugin {
 								const result = await ClaudeCodeService.executeCommand(
 									prompt,
 									filePath,
-									{ ...this.settings, claudeModel: model }
+									{ ...this.settings, claudeModel: model, continueConversation }
+								);
+
+								// Hide loading notice
+								loadingNotice.hide();
+
+								// Show result notification
+								if (result.success) {
+									new Notice('✅ Claude Code executed successfully! Check your file for changes.', 5000);
+								} else {
+									new Notice(`❌ Error: ${result.error || 'Unknown error'}`, 8000);
+								}
+							} catch (error) {
+								loadingNotice.hide();
+								new Notice(`❌ Unexpected error: ${error}`, 8000);
+							}
+						}).open();
+					}
+
+					// This command will only show up in Command Palette when the check function returns true
+					return true;
+				}
+			}
+		});
+
+		// Add command for continuing conversation
+		this.addCommand({
+			id: 'continue-claude-code-conversation',
+			name: 'Continue conversation with Claude Code',
+			checkCallback: (checking: boolean) => {
+				// Conditions to check
+				const markdownView = this.app.workspace.getActiveViewOfType(MarkdownView);
+				if (markdownView) {
+					// If checking is true, we're simply "checking" if the command can be run.
+					// If checking is false, then we want to actually perform the operation.
+					if (!checking) {
+						const file = markdownView.file;
+						if (!file) {
+							new Notice('No active file found');
+							return false;
+						}
+
+						// Get the absolute path of the current file
+						// @ts-ignore - getBasePath exists but isn't in the type definitions
+						const basePath = this.app.vault.adapter.getBasePath?.() || this.app.vault.adapter.basePath || '';
+						const filePath = basePath ? `${basePath}/${file.path}` : file.path;
+
+						new ClaudePromptModal(this.app, true, async (prompt, model, continueConversation) => {
+							// Show that we're processing with a longer timeout
+							const loadingNotice = new Notice(`🤖 Claude Code (${model}) is continuing conversation...`, 0);
+
+							try {
+								// Execute the command with settings and model
+								const result = await ClaudeCodeService.executeCommand(
+									prompt,
+									filePath,
+									{ ...this.settings, claudeModel: model, continueConversation }
 								);
 
 								// Hide loading notice
@@ -120,10 +176,12 @@ export default class ClaudeCodePlugin extends Plugin {
 class ClaudePromptModal extends Modal {
 	result: string;
 	model: string = 'sonnet'; // Default model
-	onSubmit: (result: string, model: string) => void;
+	continueConversation: boolean;
+	onSubmit: (result: string, model: string, continueConversation: boolean) => void;
 
-	constructor(app: App, onSubmit: (result: string, model: string) => void) {
+	constructor(app: App, defaultContinueConversation: boolean, onSubmit: (result: string, model: string, continueConversation: boolean) => void) {
 		super(app);
+		this.continueConversation = defaultContinueConversation;
 		this.onSubmit = onSubmit;
 	}
 
@@ -137,10 +195,10 @@ class ClaudePromptModal extends Modal {
 		});
 
 		// Model selection
-		const modelContainer = contentEl.createDiv({ attr: { style: "margin: 10px 0;" } });
-		modelContainer.createEl("label", { text: "Model: ", attr: { style: "font-weight: bold; margin-right: 10px;" } });
+		const modelContainer = contentEl.createDiv({ cls: "claude-model-container" });
+		modelContainer.createEl("label", { text: "Model: ", cls: "claude-model-label" });
 
-		const modelButtons = modelContainer.createDiv({ attr: { style: "display: inline-flex; gap: 5px;" } });
+		const modelButtons = modelContainer.createDiv({ cls: "claude-model-buttons" });
 
 		const models = [
 			{ value: 'sonnet', label: 'Sonnet' },
@@ -151,53 +209,60 @@ class ClaudePromptModal extends Modal {
 		models.forEach(modelOption => {
 			const button = modelButtons.createEl("button", {
 				text: modelOption.label,
-				attr: {
-					style: `padding: 5px 15px; ${this.model === modelOption.value ?
-						'background-color: var(--interactive-accent); color: var(--text-on-accent);' :
-						'background-color: var(--background-secondary);'}`
-				}
+				cls: this.model === modelOption.value ? "claude-model-button active" : "claude-model-button"
 			});
 			button.onclick = () => {
 				this.model = modelOption.value;
 				// Update button styles
 				modelButtons.querySelectorAll('button').forEach(btn => {
-					btn.style.backgroundColor = 'var(--background-secondary)';
-					btn.style.color = '';
+					btn.removeClass('active');
 				});
-				button.style.backgroundColor = 'var(--interactive-accent)';
-				button.style.color = 'var(--text-on-accent)';
+				button.addClass('active');
 			};
+		});
+
+		// Continue conversation checkbox
+		const continueContainer = contentEl.createDiv({ cls: "claude-continue-container" });
+		const continueCheckbox = continueContainer.createEl("input", {
+			type: "checkbox",
+			cls: "claude-continue-checkbox"
+		});
+		continueCheckbox.checked = this.continueConversation;
+		continueCheckbox.addEventListener('change', () => {
+			this.continueConversation = continueCheckbox.checked;
+		});
+		continueContainer.createEl("label", { 
+			text: "Continue previous conversation",
+			cls: "claude-continue-label"
 		});
 
 		const inputContainer = contentEl.createDiv();
 		const textArea = inputContainer.createEl("textarea", {
+			cls: "claude-textarea",
 			attr: {
-				style: "width: 100%; height: 150px; margin: 10px 0;",
 				placeholder: "e.g., Add a new section about TypeScript best practices..."
 			}
 		});
 
 		textArea.focus();
 
-		const buttonContainer = contentEl.createDiv({
-			attr: { style: "display: flex; justify-content: flex-end; gap: 10px; margin-top: 10px;" }
-		});
+		const buttonContainer = contentEl.createDiv({ cls: "claude-button-container" });
 
-		const cancelButton = buttonContainer.createEl("button", { text: "Cancel" });
+		const cancelButton = buttonContainer.createEl("button", { text: "Cancel", cls: "claude-cancel-button" });
 		cancelButton.onclick = () => {
 			this.close();
 		};
 
 		const submitButton = buttonContainer.createEl("button", {
 			text: "Send to Claude",
-			attr: { style: "background-color: var(--interactive-accent); color: var(--text-on-accent);" }
+			cls: "claude-submit-button"
 		});
 		submitButton.onclick = () => {
 			const value = textArea.value.trim();
 			if (value) {
 				this.result = value;
 				this.close();
-				this.onSubmit(this.result, this.model);
+				this.onSubmit(this.result, this.model, this.continueConversation);
 			}
 		};
 

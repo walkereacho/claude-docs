@@ -1,8 +1,87 @@
-/*
+/* Claude Code Plugin Styles */
 
-This CSS file will be included with your plugin, and
-available in the app when your plugin is enabled.
+/* Model Selection */
+.claude-model-container {
+    margin: 10px 0;
+}
 
-If your plugin does not need CSS, delete this file.
+.claude-model-label {
+    font-weight: bold;
+    margin-right: 10px;
+}
 
-*/
+.claude-model-buttons {
+    display: inline-flex;
+    gap: 5px;
+}
+
+.claude-model-button {
+    padding: 5px 15px;
+    background-color: var(--background-secondary);
+    border: 1px solid var(--background-modifier-border);
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.claude-model-button:hover {
+    background-color: var(--background-modifier-hover);
+}
+
+.claude-model-button.active {
+    background-color: var(--interactive-accent);
+    color: var(--text-on-accent);
+}
+
+/* Continue Conversation */
+.claude-continue-container {
+    margin: 10px 0;
+}
+
+.claude-continue-checkbox {
+    margin-right: 8px;
+}
+
+.claude-continue-label {
+    font-weight: normal;
+}
+
+/* Text Input */
+.claude-textarea {
+    width: 100%;
+    height: 150px;
+    margin: 10px 0;
+    resize: vertical;
+}
+
+/* Button Container */
+.claude-button-container {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-top: 10px;
+}
+
+.claude-submit-button {
+    background-color: var(--interactive-accent);
+    color: var(--text-on-accent);
+    padding: 8px 16px;
+    border: none;
+    cursor: pointer;
+    transition: opacity 0.2s ease;
+}
+
+.claude-submit-button:hover {
+    opacity: 0.9;
+}
+
+.claude-cancel-button {
+    padding: 8px 16px;
+    background-color: var(--background-secondary);
+    border: 1px solid var(--background-modifier-border);
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+}
+
+.claude-cancel-button:hover {
+    background-color: var(--background-modifier-hover);
+}

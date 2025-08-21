@@ -1,7 +1,7 @@
 {
 	"id": "claude-docs",
 	"name": "Claude Docs",
-	"version": "1.0.0",
+	"version": "1.1.1",
 	"minAppVersion": "0.15.0",
 	"description": "Allows users to work with ClaudeCode on markdown files for documentation work and planning",
 	"author": "Walker Eacho",
